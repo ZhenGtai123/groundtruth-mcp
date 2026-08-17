@@ -20,8 +20,9 @@ result an agent can act on and one it has to go hunting for.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Any, Iterator
+from typing import Any
 
 _SEGMENT_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*)(\[\])?$")
 
@@ -41,7 +42,10 @@ class SelectorError(ValueError):
 
 
 def parse(expr: str) -> list[tuple[str, bool]]:
-    """`"states[].transitions[].to"` -> `[("states", True), ("transitions", True), ("to", False)]`."""
+    """`"states[].transitions[].to"` -> segments, each flagged as iterating or not.
+
+    `[("states", True), ("transitions", True), ("to", False)]`
+    """
     cleaned = (expr or "").strip()
     if not cleaned:
         raise SelectorError("empty selector")

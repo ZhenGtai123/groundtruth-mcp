@@ -19,12 +19,12 @@ from __future__ import annotations
 
 import json
 import random
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
-
-from groundtruth_mcp import Context, Issue, Loaded, Toolkit, Trace
+from typing import Any
 
 import engine
+from groundtruth_mcp import Context, Issue, Loaded, Toolkit, Trace
 
 FLOW_DIR = Path(__file__).parent / "flows"
 
@@ -118,9 +118,7 @@ def check_policy(flow: Mapping[str, Any], ctx: Context) -> list[Issue]:
         )
 
     terminals = {
-        state.get("outcome")
-        for state in flow.get("states", [])
-        if state.get("kind") == "terminal"
+        state.get("outcome") for state in flow.get("states", []) if state.get("kind") == "terminal"
     }
     if "success" not in terminals:
         issues.append(

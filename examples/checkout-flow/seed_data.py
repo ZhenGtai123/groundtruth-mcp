@@ -24,8 +24,8 @@ HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(HERE.parent.parent / "src"))
 
-from groundtruth_mcp import Context  # noqa: E402
 from groundtruth_app import kit, load_flow, run_flow  # noqa: E402
+from groundtruth_mcp import Context  # noqa: E402
 
 RUNS = 500
 FLOWS = ("standard_checkout", "express_checkout")

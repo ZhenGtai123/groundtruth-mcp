@@ -1,0 +1,39 @@
+name: Feature request
+description: Propose a check type, an aggregate, a data source, or a capability.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The line this project holds: the library owns what is the same in every
+        project (seed loop, aggregation, gating, output budget, MCP surface).
+        Anything that knows what a *state* or a *stage* means belongs in the
+        adopting project's toolkit module. Proposals that stay on this side of
+        that line are much easier to accept.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The situation you are in
+      description: What are you trying to check, measure or expose, and what does it cost you today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: shape
+    attributes:
+      label: What it would look like
+      description: A rule file entry, a threshold expression, a tool signature — whatever form it takes.
+      render: toml
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternative
+    attributes:
+      label: Why a `@kit.validator` in your own repo is not enough
+      description: >
+        Custom Python validators already cover a lot. Saying why this case
+        generalises is the strongest argument for putting it in the library.
+    validations:
+      required: true

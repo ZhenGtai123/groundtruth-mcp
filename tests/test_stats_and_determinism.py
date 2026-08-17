@@ -12,7 +12,7 @@ from groundtruth_mcp.stats import MetricError
 def batch(labels, values):
     return [
         RunOutcome(seed=i, outcome=label, metrics={"steps": float(value)})
-        for i, (label, value) in enumerate(zip(labels, values))
+        for i, (label, value) in enumerate(zip(labels, values, strict=True))
     ]
 
 
@@ -54,7 +54,7 @@ def test_thresholds_gate_on_both_edges():
 def test_a_threshold_with_no_bound_is_rejected_at_construction():
     with pytest.raises(ValueError, match="never fails"):
         Threshold(metric="rate:ok")
-    with pytest.raises(ValueError, match="min=.* > max="):
+    with pytest.raises(ValueError, match=r"min=.* > max="):
         Threshold(metric="mean:steps", min=10, max=1)
 
 

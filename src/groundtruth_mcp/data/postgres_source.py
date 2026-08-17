@@ -8,7 +8,6 @@ uses the SQLite source should never be blocked by a missing psycopg.
 from __future__ import annotations
 
 import re
-from typing import Any
 
 from .guard import QueryRejected, QueryResult, SqlGuard, TableInfo
 
@@ -22,7 +21,9 @@ class PostgresSource:
 
     driver = "postgres"
 
-    def __init__(self, url: str, guard: SqlGuard | None = None, schema_name: str = "public") -> None:
+    def __init__(
+        self, url: str, guard: SqlGuard | None = None, schema_name: str = "public"
+    ) -> None:
         self.url = _DRIVER_SUFFIX.sub("postgresql://", url or "")
         self.guard = guard or SqlGuard()
         self.schema_name = schema_name
@@ -36,7 +37,7 @@ class PostgresSource:
         if not self.url:
             return False, (
                 "no PostgreSQL URL configured. Set `[data].url` in your config, or point it at "
-                "an environment variable with `url_env = \"DATABASE_URL\"`."
+                'an environment variable with `url_env = "DATABASE_URL"`.'
             )
         try:
             import psycopg  # noqa: F401
@@ -66,7 +67,7 @@ class PostgresSource:
         statement = self.guard.validate(sql, max_rows)
         try:
             connection = self._connect()
-        except Exception as exc:  # noqa: BLE001 - connection errors are a tool result, not a crash
+        except Exception as exc:
             raise QueryRejected(
                 f"could not connect to {self.location}: {type(exc).__name__}: {exc}"
             ) from exc
@@ -75,8 +76,8 @@ class PostgresSource:
             with connection.cursor() as cursor:
                 cursor.execute(statement)
                 columns = [description.name for description in (cursor.description or [])]
-                raw = [dict(zip(columns, record)) for record in cursor.fetchall()]
-        except Exception as exc:  # noqa: BLE001
+                raw = [dict(zip(columns, record, strict=True)) for record in cursor.fetchall()]
+        except Exception as exc:
             raise QueryRejected(f"PostgreSQL rejected the query: {exc}") from exc
         finally:
             connection.rollback()

@@ -27,8 +27,9 @@ guarantee.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 _WRITE_KEYWORDS = re.compile(
     r"\b(insert|update|delete|drop|alter|truncate|grant|revoke|create|replace|execute|"
@@ -59,7 +60,7 @@ class SqlGuard:
     statement_timeout_ms: int = 5000
 
     @classmethod
-    def from_config(cls, config: Mapping[str, Any]) -> "SqlGuard":
+    def from_config(cls, config: Mapping[str, Any]) -> SqlGuard:
         return cls(
             allow_tables=frozenset(str(t).lower() for t in config.get("allow_tables", [])),
             deny_columns=frozenset(str(c).lower() for c in config.get("deny_columns", [])),

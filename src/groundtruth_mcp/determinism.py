@@ -21,7 +21,8 @@ seed, same trace, byte for byte, on every machine. That buys three things:
 from __future__ import annotations
 
 import hashlib
-from typing import Iterable, Literal, Sequence
+from collections.abc import Iterable, Sequence
+from typing import Literal
 
 SeedPolicy = Literal["offset", "hash"]
 
@@ -80,4 +81,6 @@ def compare_batches(first: Sequence[str], second: Sequence[str]) -> list[int]:
     Each returned index is directly replayable — that is the point of returning
     indices rather than a bare boolean.
     """
-    return [i for i, (a, b) in enumerate(zip(first, second)) if a != b]
+    # strict=False on purpose: comparing a short re-run sample against a full
+    # batch is the normal case, and the shared prefix is what we are asking about.
+    return [i for i, (a, b) in enumerate(zip(first, second, strict=False)) if a != b]

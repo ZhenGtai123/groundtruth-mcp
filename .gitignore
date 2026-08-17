@@ -8,6 +8,10 @@ dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
 
 # Local, machine-specific, or generated. Never commit a real connection string.
 .env

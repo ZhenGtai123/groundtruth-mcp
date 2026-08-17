@@ -15,7 +15,7 @@ of the conversation. Three rules hold throughout:
 from __future__ import annotations
 
 import json
-from typing import Iterable, Sequence
+from collections.abc import Iterable, Sequence
 
 from .budget import fence_untrusted, truncate
 from .contracts import Report, Trace
@@ -153,7 +153,7 @@ def render_targets(targets: dict[str, str], noun: str, *, limit: int) -> str:
 def _number(value: float) -> str:
     """Two decimals for fractions, no decimals for whole counts."""
     if abs(value - round(value)) < 1e-9:
-        return str(int(round(value)))
+        return str(round(value))
     return f"{value:.2f}"
 
 

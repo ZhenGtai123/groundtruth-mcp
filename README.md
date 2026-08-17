@@ -325,6 +325,20 @@ Spawns the server as a real subprocess, initializes over stdio, lists tools,
 calls two of them, prints what came back — the same sequence a client performs.
 Run it before blaming the agent for not seeing your tools.
 
+## What CI enforces on every pull request
+
+Not a badge that means "the tests ran" — [six things](.github/workflows/ci.yml),
+each of which has blocked something:
+
+| Check | Why it is a gate and not a suggestion |
+|---|---|
+| `ruff check` + `ruff format --check` | Including `BLE`, so every broad `except` carries a written justification |
+| `mypy` | The package ships `py.typed`; a wrong annotation is a wrong API |
+| `pytest` on 3.11 / 3.12 / 3.13 | 69 tests, coverage floor 75% (currently 78% with branch coverage) |
+| `scripts/mcp_smoke.py` | A real subprocess, real stdio, real `tools/list` and `tools/call` |
+| `simulate --gate --check-determinism` | The project's own argument, applied to itself |
+| `lint broken_checkout` **must** exit 1 | A lint that cannot fail is decorative |
+
 ## Limitations, stated plainly
 
 - **The SQL table allowlist is textual.** It scans for identifiers after `FROM`

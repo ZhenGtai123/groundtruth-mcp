@@ -43,7 +43,7 @@ def test_missing_target_lists_what_is_available():
     def run(subject, seed, ctx):
         return Trace(outcome="ok")
 
-    with pytest.raises(TargetNotFound, match="good, bad|bad, good"):
+    with pytest.raises(TargetNotFound, match=r"good, bad|bad, good"):
         kit.replay("typo")
     with pytest.raises(TargetNotFound, match="widget"):
         kit.replay("")
@@ -51,11 +51,11 @@ def test_missing_target_lists_what_is_available():
 
 def test_capabilities_that_were_never_registered_say_how_to_register_them():
     kit = make_kit()
-    with pytest.raises(CapabilityNotConfigured, match="@kit.runner"):
+    with pytest.raises(CapabilityNotConfigured, match=r"@kit\.runner"):
         kit.replay("good")
-    with pytest.raises(CapabilityNotConfigured, match="@kit.validator"):
+    with pytest.raises(CapabilityNotConfigured, match=r"@kit\.validator"):
         kit.lint("good")
-    with pytest.raises(CapabilityNotConfigured, match="@kit.simulator"):
+    with pytest.raises(CapabilityNotConfigured, match=r"@kit\.simulator"):
         kit.simulate("good")
     with pytest.raises(CapabilityNotConfigured, match=r"\[data\]"):
         kit.query("SELECT 1")

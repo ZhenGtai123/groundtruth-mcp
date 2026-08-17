@@ -18,8 +18,8 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from .config import ConfigError, ProjectConfig
 from .contracts import ToolkitError
@@ -93,9 +93,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _load(args: argparse.Namespace) -> tuple[ProjectConfig, Toolkit]:
-    config = (
-        ProjectConfig.load(args.config) if args.config else ProjectConfig.discover()
-    )
+    config = ProjectConfig.load(args.config) if args.config else ProjectConfig.discover()
     return config, config.build()
 
 
@@ -198,7 +196,8 @@ def _doctor(config: ProjectConfig, kit: Toolkit) -> int:
         f"  lint      {'yes' if kit.has_lint else 'no  — no rules and no @kit.validator'}"
         + (f"  ({len(kit.ruleset)} rules)" if kit.ruleset else ""),
         f"  replay    {'yes' if kit.has_runner else 'no  — register @kit.runner'}",
-        f"  simulate  {'yes' if kit.has_simulator else 'no  — register @kit.simulator or @kit.runner'}"
+        f"  simulate  "
+        f"{'yes' if kit.has_simulator else 'no  — register @kit.simulator or @kit.runner'}"
         + (f"  (default {kit.default_runs} runs, max {kit.max_runs})" if kit.has_simulator else ""),
         f"  query     {'yes' if kit.has_data else 'no  — add a [data] section'}",
         "",
@@ -232,7 +231,10 @@ def _doctor(config: ProjectConfig, kit: Toolkit) -> int:
 
     targets = kit.available_targets()
     lines.extend(
-        ["", f"{kit.subject_noun}s: " + (", ".join(sorted(targets)) if targets else "(none listed)")]
+        [
+            "",
+            f"{kit.subject_noun}s: " + (", ".join(sorted(targets)) if targets else "(none listed)"),
+        ]
     )
 
     print("\n".join(lines))

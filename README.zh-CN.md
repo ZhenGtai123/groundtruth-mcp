@@ -278,6 +278,19 @@ python scripts/mcp_smoke.py [path/to/groundtruth.toml]
 容打出来——和一个真实客户端做的事情完全一样。在怪 AI 看不见你的工具之前先跑
 这个。
 
+## CI 在每个 PR 上卡什么
+
+不是一个"测试跑过了"的徽章——是[六件事](.github/workflows/ci.yml)，每一件都真的拦过东西：
+
+| 检查 | 为什么它是门禁而不是建议 |
+|---|---|
+| `ruff check` + `ruff format --check` | 规则集里包含 `BLE`，所以每一处宽泛的 `except` 都必须写明理由 |
+| `mypy` | 包里带 `py.typed`；类型标注写错就是 API 写错 |
+| `pytest` 跑 3.11 / 3.12 / 3.13 | 69 个测试，覆盖率下限 75%（当前 78%，已开分支覆盖） |
+| `scripts/mcp_smoke.py` | 真子进程、真 stdio、真 `tools/list` 和 `tools/call` |
+| `simulate --gate --check-determinism` | 这个项目自己的主张，用在自己身上 |
+| `lint broken_checkout` **必须** exit 1 | 一个不会失败的 lint 是装饰品 |
+
 ## 已知限制（如实写）
 
 - **SQL 表白名单是文本层的**：它扫 `FROM` / `JOIN` 后面的标识符。真正的按表授权

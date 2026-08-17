@@ -1,0 +1,50 @@
+name: Bug report
+description: Something behaves differently from what it says it does.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Most bugs here are reproducible from a config plus a seed. If yours is,
+        that pair is the whole report — paste it and skip the prose.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected instead
+      placeholder: |
+        `lint` reported UNREACHABLE_STATE for a state that is reached via
+        a transition on line 40. I expected it to be reachable.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: >
+        The command, and the smallest config that shows it. If it involves a
+        simulation, include the seed — `simulate` prints a fingerprint and
+        every failing run is replayable by seed.
+      render: shell
+      placeholder: |
+        groundtruth lint my_flow
+        # config:
+        # { "start": "a", "states": [...] }
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Output of `groundtruth doctor`
+      description: Says which capabilities are wired up, which thresholds exist, and whether the data source is reachable.
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: "groundtruth-mcp 0.1.0, Python 3.12, Windows 11"
+    validations:
+      required: true

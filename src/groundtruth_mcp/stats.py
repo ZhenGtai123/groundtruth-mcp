@@ -24,8 +24,9 @@ from __future__ import annotations
 import math
 import statistics
 from collections import Counter
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 from .contracts import RunOutcome
 from .determinism import fingerprint
@@ -83,12 +84,10 @@ class Threshold:
                 "a band with no edges never fails"
             )
         if self.min is not None and self.max is not None and self.min > self.max:
-            raise ValueError(
-                f"threshold on {self.metric!r} has min={self.min} > max={self.max}"
-            )
+            raise ValueError(f"threshold on {self.metric!r} has min={self.min} > max={self.max}")
 
     @classmethod
-    def from_dicts(cls, specs: Sequence[Mapping[str, Any]]) -> list["Threshold"]:
+    def from_dicts(cls, specs: Sequence[Mapping[str, Any]]) -> list[Threshold]:
         out: list[Threshold] = []
         for index, spec in enumerate(specs):
             metric = str(spec.get("metric", "")).strip()
@@ -109,7 +108,11 @@ class Threshold:
             return f"[{_fmt(self.min)}, {_fmt(self.max)}]"
         if self.min is not None:
             return f">= {_fmt(self.min)}"
-        return f"<= {_fmt(self.max)}"
+        if self.max is not None:
+            return f"<= {_fmt(self.max)}"
+        # Unreachable: __post_init__ rejects a threshold with neither bound.
+        # Spelled out anyway so the invariant survives someone editing that check.
+        raise ValueError(f"threshold on {self.metric!r} has no bounds")
 
 
 def _as_float(value: Any) -> float | None:
@@ -253,7 +256,7 @@ def _evaluate(
         return float(runs)
 
     if aggregate not in _AGGREGATES:
-        known = ", ".join(["rate"] + sorted(_AGGREGATES))
+        known = ", ".join(["rate", *sorted(_AGGREGATES)])
         raise MetricError(
             f"unknown aggregate {aggregate!r} in {expression!r}. Known aggregates: {known}"
         )

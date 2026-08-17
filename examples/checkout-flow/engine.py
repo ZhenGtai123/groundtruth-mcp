@@ -14,7 +14,8 @@ becomes a rumour.
 from __future__ import annotations
 
 import random
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 # Signals a state can emit; each transition declares the one it answers to.
 ALWAYS = "always"
@@ -60,7 +61,7 @@ def _latency(state: Mapping[str, Any], policy: Mapping[str, Any], rng: random.Ra
 class StepResult:
     """What one state did: where it went, what it emitted, what it cost."""
 
-    __slots__ = ("signal", "target", "latency_ms", "note")
+    __slots__ = ("latency_ms", "note", "signal", "target")
 
     def __init__(self, signal: str, target: str | None, latency_ms: int, note: str = "") -> None:
         self.signal = signal

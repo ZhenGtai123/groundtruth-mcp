@@ -31,8 +31,9 @@ ten thousand times.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Mapping, Sequence
+from typing import Any
 
 from .budget import DEFAULT_MAX_CHARS
 from .checks.rules import RuleSet
@@ -159,7 +160,7 @@ class Toolkit:
 
     @property
     def simulator(self):
-        """`(subject, seed: int, ctx) -> RunOutcome`. Optional; derived from the runner if absent."""
+        """`(subject, seed: int, ctx) -> RunOutcome`. Optional; derived from the runner."""
         return _decorator(lambda fn, desc: setattr(self, "_simulator", Capability(fn, desc)))
 
     def use_rules(self, ruleset: RuleSet) -> None:
@@ -222,8 +223,10 @@ class Toolkit:
         except (TargetNotFound, CapabilityNotConfigured):
             raise
         except FileNotFoundError as exc:
-            raise TargetNotFound(f"no {self.subject_noun} named {name!r}.{self.target_hint()}") from exc
-        except Exception as exc:  # noqa: BLE001
+            raise TargetNotFound(
+                f"no {self.subject_noun} named {name!r}.{self.target_hint()}"
+            ) from exc
+        except Exception as exc:
             raise ToolkitError(
                 f"loading {self.subject_noun} {name!r} raised {type(exc).__name__}: {exc}"
             ) from exc
@@ -285,7 +288,9 @@ class Toolkit:
         if max_steps is not None:
             ctx.max_steps = max(1, int(max_steps))
 
-        trace = self._call(self._runner, f"runner {self._runner.label}", loaded.subject, int(seed), ctx)
+        trace = self._call(
+            self._runner, f"runner {self._runner.label}", loaded.subject, int(seed), ctx
+        )
         if not isinstance(trace, Trace):
             raise ToolkitError(
                 f"runner {self._runner.label} returned {type(trace).__name__}; expected a Trace"
@@ -327,7 +332,7 @@ class Toolkit:
             repeat = [self._one_run(loaded.subject, target, run_seed) for run_seed in sample]
             diverged = [
                 index
-                for index, (first, second) in enumerate(zip(outcomes, repeat))
+                for index, (first, second) in enumerate(zip(outcomes, repeat, strict=False))
                 if (first.outcome, dict(first.metrics)) != (second.outcome, dict(second.metrics))
             ]
             summary.deterministic = not diverged
@@ -377,9 +382,7 @@ class Toolkit:
 
     def schema(self) -> list[TableInfo]:
         if self.source is None:
-            raise CapabilityNotConfigured(
-                f"toolkit {self.name!r} has no data source configured."
-            )
+            raise CapabilityNotConfigured(f"toolkit {self.name!r} has no data source configured.")
         return self.source.schema()
 
     # -- internals ----------------------------------------------------------
@@ -397,7 +400,7 @@ class Toolkit:
             raise
         except QueryRejected:
             raise
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             raise ToolkitError(f"{label} raised {type(exc).__name__}: {exc}") from exc
 
 

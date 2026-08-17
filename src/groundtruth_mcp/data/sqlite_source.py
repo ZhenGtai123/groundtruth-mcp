@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import sqlite3
 import time
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from .guard import QueryRejected, QueryResult, SqlGuard, TableInfo
 

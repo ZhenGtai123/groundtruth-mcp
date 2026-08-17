@@ -24,8 +24,9 @@ alongside — see `Toolkit.validator`. This is a floor, not a ceiling.
 from __future__ import annotations
 
 import re
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any, Callable, Iterable, Mapping, Sequence
+from typing import Any
 
 from ..contracts import Issue, normalize_severity
 from . import graph as graphlib
@@ -36,9 +37,7 @@ CheckFn = Callable[[Any, "Rule"], list[Issue]]
 _REGISTRY: dict[str, tuple[CheckFn, tuple[str, ...], str, str]] = {}
 
 
-def _check(
-    name: str, *, requires: tuple[str, ...] = (), code: str = "", severity: str = "error"
-):
+def _check(name: str, *, requires: tuple[str, ...] = (), code: str = "", severity: str = "error"):
     """Register a check type with its required fields and defaults."""
 
     def decorate(fn: CheckFn) -> CheckFn:
@@ -82,7 +81,7 @@ class RuleSet:
     rules: list[Rule] = field(default_factory=list)
 
     @classmethod
-    def from_dicts(cls, specs: Sequence[Mapping[str, Any]]) -> "RuleSet":
+    def from_dicts(cls, specs: Sequence[Mapping[str, Any]]) -> RuleSet:
         return cls([_compile(index, spec) for index, spec in enumerate(specs)])
 
     def run(self, document: Any) -> list[Issue]:
@@ -309,7 +308,7 @@ def _graph_of(document: Any, rule: Rule) -> tuple[graphlib.Graph, dict[str, str]
     return graphlib.build(pairs, nodes), paths
 
 
-@_check("reachable", requires=_GRAPH_FIELDS + ("start",), code="UNREACHABLE_NODE")
+@_check("reachable", requires=(*_GRAPH_FIELDS, "start"), code="UNREACHABLE_NODE")
 def _reachable(document: Any, rule: Rule) -> list[Issue]:
     graph, paths = _graph_of(document, rule)
     start = selectors.resolve_one(document, str(rule.get("start")))

@@ -17,8 +17,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Iterator, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Iterator, Literal, Mapping
+from typing import Any, Literal
 
 Severity = Literal["error", "warning", "info"]
 
@@ -35,9 +36,7 @@ def normalize_severity(value: str) -> Severity:
     """
     lowered = (value or "").strip().lower()
     if lowered not in SEVERITY_ORDER:
-        raise ValueError(
-            f"unknown severity {value!r} — use one of: error, warning, info"
-        )
+        raise ValueError(f"unknown severity {value!r} — use one of: error, warning, info")
     return lowered  # type: ignore[return-value]
 
 
@@ -235,8 +234,7 @@ class Trace:
             "truncated": self.truncated,
             "fingerprint": self.fingerprint(),
             "issues": [
-                {"code": i.code, "severity": i.severity, "message": i.message}
-                for i in self.issues
+                {"code": i.code, "severity": i.severity, "message": i.message} for i in self.issues
             ],
         }
 

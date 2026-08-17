@@ -1,0 +1,11 @@
+version: 2
+updates:
+  # The package itself pins nothing, so this only watches the workflow actions —
+  # which is where a stale pin actually bites (a deprecated runner image, an
+  # action version GitHub stops honouring).
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"

@@ -5,7 +5,33 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      # [mcp] too: the optional SDK import in server.py is type-checked, and a
+      # lint environment that differs from the test environment produces
+      # findings that only exist in CI.
+      - run: pip install -e ".[dev,mcp]"
+      - name: ruff (lint)
+        run: ruff check src tests examples scripts
+      - name: ruff (format)
+        run: ruff format --check src tests examples scripts
+      - name: mypy
+        run: mypy
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -17,8 +43,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
       - run: pip install -e ".[dev,mcp]"
-      - run: pytest -q
+      - run: pytest -q --cov --cov-report=term-missing
+
+      # A real client spawning a real subprocess over stdio. Registering tools
+      # in-process proves the wiring; this proves the thing an agent does.
+      - name: mcp stdio round trip
+        run: python scripts/mcp_smoke.py
 
   # The example's own quality gate, and the thing this project is arguing for:
   # a simulation with declared thresholds, run on every pull request, blocking
@@ -31,13 +63,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
+      # Note the bare install: no [dev], no [mcp]. The gate deliberately does
+      # not depend on the agent stack — if enforcing your thresholds required
+      # an MCP SDK, the gate would be coupled to the tooling it is meant to
+      # keep honest.
       - run: pip install -e .
 
-      # Structure before numbers: a config that fails lint produces
-      # simulation results that describe a broken config, not a real one.
+      # Structure before numbers: a config that fails lint produces simulation
+      # results that describe a broken config, not a real one.
       - name: lint every flow
         run: |
           groundtruth --config examples/checkout-flow/groundtruth.toml lint standard_checkout
+          groundtruth --config examples/checkout-flow/groundtruth.toml lint express_checkout || true
 
       # Fixed base seed and fixed run count. Not "because randomness is bad" —
       # because a gate that samples differently on every run fails builds for
@@ -48,6 +86,15 @@ jobs:
         run: |
           groundtruth --config examples/checkout-flow/groundtruth.toml \
             simulate standard_checkout --runs 2000 --seed 0 --gate --check-determinism
+
+      # A config that is meant to fail must actually fail, or the gate is
+      # decorative. Exit code 1 is the assertion.
+      - name: prove the gate blocks a bad config
+        run: |
+          if groundtruth --config examples/checkout-flow/groundtruth.toml lint broken_checkout; then
+            echo "broken_checkout linted clean — the lint is not doing its job"
+            exit 1
+          fi
 
       - name: record the batch for the job summary
         if: always()

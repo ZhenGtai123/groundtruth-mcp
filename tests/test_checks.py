@@ -82,7 +82,14 @@ def test_ref_exists_flags_the_dangling_edge_with_its_path():
         "states": [{"id": "a", "transitions": [{"to": "typo"}]}],
     }
     rules = RuleSet.from_dicts(
-        [{"type": "ref_exists", "select": "states[].transitions[].to", "collection": "states[]", "key": "id"}]
+        [
+            {
+                "type": "ref_exists",
+                "select": "states[].transitions[].to",
+                "collection": "states[]",
+                "key": "id",
+            }
+        ]
     )
     (issue,) = rules.run(broken)
     assert issue.code == "DANGLING_REF"

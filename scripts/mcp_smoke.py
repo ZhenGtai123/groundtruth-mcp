@@ -32,7 +32,9 @@ async def main(config: Path) -> int:
     # Inherit the interpreter's path so this works from a checkout as well as
     # from an installed package.
     env = dict(os.environ)
-    env["PYTHONPATH"] = os.pathsep.join(filter(None, [str(ROOT / "src"), env.get("PYTHONPATH", "")]))
+    env["PYTHONPATH"] = os.pathsep.join(
+        filter(None, [str(ROOT / "src"), env.get("PYTHONPATH", "")])
+    )
     env["PYTHONIOENCODING"] = "utf-8"
 
     params = StdioServerParameters(
@@ -41,33 +43,30 @@ async def main(config: Path) -> int:
         env=env,
     )
 
-    async with stdio_client(params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
+    async with stdio_client(params) as (read, write), ClientSession(read, write) as session:
+        await session.initialize()
 
-            listed = await session.list_tools()
-            names = [tool.name for tool in listed.tools]
-            print(f"tools: {', '.join(names)}")
+        listed = await session.list_tools()
+        names = [tool.name for tool in listed.tools]
+        print(f"tools: {', '.join(names)}")
 
-            if "lint" not in names:
-                print("no lint tool registered", file=sys.stderr)
-                return 1
+        if "lint" not in names:
+            print("no lint tool registered", file=sys.stderr)
+            return 1
 
-            result = await session.call_tool("lint", {"target": "broken_checkout"})
-            text = "\n".join(
-                block.text for block in result.content if getattr(block, "type", "") == "text"
-            )
-            print("\n--- lint(broken_checkout) ---")
-            print(text)
+        result = await session.call_tool("lint", {"target": "broken_checkout"})
+        text = "\n".join(
+            block.text for block in result.content if getattr(block, "type", "") == "text"
+        )
+        print("\n--- lint(broken_checkout) ---")
+        print(text)
 
-            result = await session.call_tool(
-                "simulate", {"target": "standard_checkout", "runs": 200}
-            )
-            text = "\n".join(
-                block.text for block in result.content if getattr(block, "type", "") == "text"
-            )
-            print("\n--- simulate(standard_checkout, runs=200) ---")
-            print(text)
+        result = await session.call_tool("simulate", {"target": "standard_checkout", "runs": 200})
+        text = "\n".join(
+            block.text for block in result.content if getattr(block, "type", "") == "text"
+        )
+        print("\n--- simulate(standard_checkout, runs=200) ---")
+        print(text)
 
     return 0
 

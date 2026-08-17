@@ -30,7 +30,13 @@ dependencies = []
 [project.optional-dependencies]
 mcp = ["mcp>=1.2"]
 postgres = ["psycopg[binary]>=3.1"]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.11"]
+
+[project.urls]
+Homepage = "https://github.com/ZhenGtai123/groundtruth-mcp"
+Documentation = "https://github.com/ZhenGtai123/groundtruth-mcp#readme"
+Issues = "https://github.com/ZhenGtai123/groundtruth-mcp/issues"
+Changelog = "https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/CHANGELOG.md"
 
 [project.scripts]
 groundtruth = "groundtruth_mcp.cli:main"
@@ -41,3 +47,42 @@ packages = ["src/groundtruth_mcp"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "examples/checkout-flow"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests", "examples/checkout-flow"]
+
+[tool.ruff.lint]
+# BLE is in the list on purpose: this package catches broad exceptions in a few
+# places (user code crossing the toolkit boundary, a database refusing a
+# query), and each one carries an explicit `# noqa: BLE001` next to the reason.
+# Selecting the rule is what keeps those annotations honest — remove the
+# justification and the lint comes back.
+select = ["E", "F", "W", "I", "B", "BLE", "C4", "RET", "RUF", "SIM", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test callbacks take the full capability signature whether or not a given test
+# body uses every argument; that is the contract, not an oversight.
+"tests/*" = ["ARG001", "ARG002"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src/groundtruth_mcp"]
+ignore_missing_imports = true      # the MCP SDK and psycopg are optional extras
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true
+
+[tool.coverage.run]
+branch = true
+source = ["groundtruth_mcp"]
+
+[tool.coverage.report]
+# 75, not 90: the PostgreSQL source cannot be exercised without a live server,
+# and mocking a database to inflate a percentage would test the mock. What it
+# does guarantee is that the rule engine, statistics, guard and toolkit stay
+# covered — the parts a regression would actually reach.
+fail_under = 75
+show_missing = true
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "raise NotImplementedError"]

@@ -17,9 +17,10 @@ import importlib
 import os
 import sys
 import tomllib
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from .checks.rules import RuleSet
 from .contracts import ToolkitError
@@ -62,7 +63,7 @@ class ProjectConfig:
         return self.path.parent
 
     @classmethod
-    def load(cls, path: Path | str) -> "ProjectConfig":
+    def load(cls, path: Path | str) -> ProjectConfig:
         config_path = Path(path).resolve()
         if not config_path.is_file():
             raise ConfigError(f"no config file at {config_path}")
@@ -74,7 +75,7 @@ class ProjectConfig:
         return cls(path=config_path, raw=raw)
 
     @classmethod
-    def discover(cls, start: Path | str | None = None) -> "ProjectConfig":
+    def discover(cls, start: Path | str | None = None) -> ProjectConfig:
         found = find_config(start)
         if found is None:
             raise ConfigError(
