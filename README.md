@@ -1,15 +1,15 @@
 # groundtruth-mcp
 
 [![ci](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml)
-[![python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
-[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/pyproject.toml)
+[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/LICENSE)
 
 **Your coding agent can read every file in your repo and still be guessing.**
 This turns your project's own checks, replays, simulations and queries into MCP
 tools, so it observes the consequences of its edit instead of predicting them.
 
-[中文文档](README.zh-CN.md) · [Adoption guide](docs/ADOPTION.md) ·
-[Architecture](docs/ARCHITECTURE.md) · [Why fixed seeds](docs/DETERMINISM.md)
+[中文文档](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/README.zh-CN.md) · [Adoption guide](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ADOPTION.md) ·
+[Architecture](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ARCHITECTURE.md) · [Why fixed seeds](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/DETERMINISM.md)
 
 ---
 
@@ -58,8 +58,9 @@ drift, because there is only one copy.
 ## Sixty seconds
 
 ```bash
-git clone <this repo> && cd groundtruth-mcp
-pip install -e ".[mcp]"
+pip install "groundtruth-mcp[mcp]"
+
+git clone https://github.com/ZhenGtai123/groundtruth-mcp && cd groundtruth-mcp
 groundtruth --config examples/checkout-flow/groundtruth.toml lint broken_checkout
 ```
 
@@ -233,7 +234,7 @@ note = "why this number, for whoever has to change it"
 
 Then `groundtruth doctor` tells you what is wired up, `groundtruth serve` hands
 the tools to an agent, and `groundtruth simulate --gate` blocks the merge. Full
-walkthrough with per-domain examples: **[docs/ADOPTION.md](docs/ADOPTION.md)**.
+walkthrough with per-domain examples: **[docs/ADOPTION.md](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ADOPTION.md)**.
 
 ## Rules you get for free
 
@@ -327,7 +328,7 @@ Run it before blaming the agent for not seeing your tools.
 
 ## What CI enforces on every pull request
 
-Not a badge that means "the tests ran" — [six things](.github/workflows/ci.yml),
+Not a badge that means "the tests ran" — [six things](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/.github/workflows/ci.yml),
 each of which has blocked something:
 
 | Check | Why it is a gate and not a suggestion |
@@ -377,7 +378,7 @@ decisions that turned out to matter more than the feature list:
 - Output capped on every path, because one enthusiastic query can evict the
   rest of the conversation.
 
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) has the module map and the full
+[docs/ARCHITECTURE.md](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ARCHITECTURE.md) has the module map and the full
 reasoning.
 
 ## License

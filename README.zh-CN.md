@@ -1,15 +1,15 @@
 # groundtruth-mcp
 
 [![ci](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml)
-[![python](https://img.shields.io/badge/python-3.11%2B-blue)](pyproject.toml)
-[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/pyproject.toml)
+[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/LICENSE)
 
 **AI 编码助手能读完你仓库里的每一个文件，然后照样在猜。**
 这个项目把你自己项目里的校验、试跑、模拟和只读查询封装成 MCP 工具，让它改完
 代码之后能*观察*后果，而不是*预测*后果。
 
-[English](README.md) · [接入指南](docs/ADOPTION.md) ·
-[架构说明](docs/ARCHITECTURE.md) · [为什么要固定随机种子](docs/DETERMINISM.md)
+[English](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/README.md) · [接入指南](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ADOPTION.md) ·
+[架构说明](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ARCHITECTURE.md) · [为什么要固定随机种子](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/DETERMINISM.md)
 
 ---
 
@@ -55,8 +55,9 @@ flowchart LR
 ## 六十秒
 
 ```bash
-git clone <this repo> && cd groundtruth-mcp
-pip install -e ".[mcp]"
+pip install "groundtruth-mcp[mcp]"
+
+git clone https://github.com/ZhenGtai123/groundtruth-mcp && cd groundtruth-mcp
 groundtruth --config examples/checkout-flow/groundtruth.toml lint broken_checkout
 ```
 
@@ -191,7 +192,7 @@ note = "写清楚这个数是怎么来的，给以后要改它的人看"
 
 然后 `groundtruth doctor` 告诉你什么接上了，`groundtruth serve` 把工具交给
 AI，`groundtruth simulate --gate` 卡住合并。完整流程和各领域的对照表见
-**[docs/ADOPTION.md](docs/ADOPTION.md)**。
+**[docs/ADOPTION.md](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ADOPTION.md)**。
 
 ## 白送的十二种规则
 
@@ -280,7 +281,7 @@ python scripts/mcp_smoke.py [path/to/groundtruth.toml]
 
 ## CI 在每个 PR 上卡什么
 
-不是一个"测试跑过了"的徽章——是[六件事](.github/workflows/ci.yml)，每一件都真的拦过东西：
+不是一个"测试跑过了"的徽章——是[六件事](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/.github/workflows/ci.yml)，每一件都真的拦过东西：
 
 | 检查 | 为什么它是门禁而不是建议 |
 |---|---|
@@ -320,7 +321,7 @@ python scripts/mcp_smoke.py [path/to/groundtruth.toml]
 - 工具描述由实时配置生成。过期的描述意味着 AI 会自信地用错工具。
 - 每条路径都截断输出。一次兴奋的查询就能把对话里剩下的东西挤出上下文。
 
-模块地图和完整推理见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+模块地图和完整推理见 [docs/ARCHITECTURE.md](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/docs/ARCHITECTURE.md)。
 
 ## 许可证
 

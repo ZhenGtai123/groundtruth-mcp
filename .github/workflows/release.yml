@@ -1,0 +1,116 @@
+name: release
+
+# Publishing uses PyPI Trusted Publishing (OIDC), not an API token. There is no
+# secret in this repository to leak, rotate, or accidentally print: GitHub mints
+# a short-lived identity token for this workflow, PyPI verifies it came from
+# this repo, this workflow file, and this environment, and issues an upload
+# token that expires in minutes. A long-lived `PYPI_API_TOKEN` in repository
+# secrets is one leaked log line away from someone else owning the package.
+#
+# One-time setup on PyPI (Your projects -> Publishing, or the pending-publisher
+# form for a name that does not exist yet):
+#   owner: ZhenGtai123   repository: groundtruth-mcp
+#   workflow: release.yml   environment: pypi   (and `testpypi` on TestPyPI)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Where to publish
+        type: choice
+        options: [testpypi, pypi]
+        default: testpypi
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0        # the version/tag check below needs the tags
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install build twine
+      - run: python -m build
+
+      # Metadata that fails to render on PyPI cannot be fixed after upload —
+      # a version number is spent the moment it is published.
+      - name: twine check
+        run: twine check --strict dist/*
+
+      # A tag that disagrees with the packaged version publishes something
+      # nobody can reproduce from the repository. Refuse rather than guess.
+      - name: tag and package version agree
+        if: github.event_name == 'release'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg=$(python -c "import re,pathlib; print(re.search(r'__version__ = \"([^\"]+)\"', pathlib.Path('src/groundtruth_mcp/__init__.py').read_text()).group(1))")
+          echo "tag=$tag package=$pkg"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $tag does not match groundtruth_mcp.__version__ $pkg"
+            exit 1
+          fi
+
+      # Install the artifact the way a stranger would — from the wheel, into a
+      # clean interpreter, run from a directory that is not the checkout, so
+      # nothing resolves by accident through the source tree.
+      - name: the wheel works on its own
+        run: |
+          python -m venv /tmp/verify
+          /tmp/verify/bin/pip install --quiet "$(ls dist/*.whl)[mcp]"
+          cd /tmp
+          /tmp/verify/bin/groundtruth --config "$GITHUB_WORKSPACE/examples/checkout-flow/groundtruth.toml" \
+            simulate standard_checkout --runs 500 --seed 0 --gate
+          /tmp/verify/bin/python -c "import groundtruth_mcp, pathlib, sys; \
+            p = pathlib.Path(groundtruth_mcp.__file__).parent / 'py.typed'; \
+            sys.exit(0 if p.exists() else 'py.typed missing from the wheel')"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.target == 'testpypi'
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/groundtruth-mcp
+    permissions:
+      id-token: write         # the only permission Trusted Publishing needs
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    needs: build
+    if: github.event_name == 'release' || inputs.target == 'pypi'
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/groundtruth-mcp
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      # Publishes with PEP 740 attestations by default: each file carries a
+      # signed statement of which workflow, in which repository, at which commit
+      # produced it. Anyone can check the wheel on PyPI came from this repo.
+      - uses: pypa/gh-action-pypi-publish@release/v1

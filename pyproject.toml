@@ -4,20 +4,28 @@ build-backend = "hatchling.build"
 
 [project]
 name = "groundtruth-mcp"
-version = "0.1.0"
+# Single-sourced from groundtruth_mcp.__version__ (see [tool.hatch.version]).
+# Two copies of a version number is one copy too many: the one you forget to
+# bump is always the one someone reads.
+dynamic = ["version"]
 description = "Expose your project's own lint / replay / simulate / query capabilities to coding agents as MCP tools, so the agent gets real feedback instead of guessing."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "ZhenGtai123" }]
 keywords = ["mcp", "model-context-protocol", "ai-agents", "developer-tools", "simulation", "ci"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
+    "Typing :: Typed",
 ]
 
 # The core — rule engine, seeded simulation, statistics, thresholds, SQL guard,
@@ -41,8 +49,30 @@ Changelog = "https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/CHANGELOG.
 [project.scripts]
 groundtruth = "groundtruth_mcp.cli:main"
 
+[tool.hatch.version]
+path = "src/groundtruth_mcp/__init__.py"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/groundtruth_mcp"]
+
+[tool.hatch.build.targets.sdist]
+# The sdist carries everything needed to verify the package from source: the
+# tests, the runnable example, and the CI that gates them. A source
+# distribution you cannot test is a tarball.
+include = [
+    "/src",
+    "/tests",
+    "/examples",
+    "/scripts",
+    "/docs",
+    "/.github/workflows",
+    "/README.md",
+    "/README.zh-CN.md",
+    "/CHANGELOG.md",
+    "/CONTRIBUTING.md",
+    "/SECURITY.md",
+    "/LICENSE",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

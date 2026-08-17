@@ -30,6 +30,27 @@ API, anything that makes the core depend on a third-party package. The core's
 lack of dependencies is a feature — it is what lets a bare CI runner enforce
 thresholds without installing an agent stack.
 
+## Releasing
+
+Versions are single-sourced from `groundtruth_mcp.__version__`; `pyproject.toml`
+reads it through `[tool.hatch.version]`, so there is one number to bump.
+
+1. Bump `__version__` in `src/groundtruth_mcp/__init__.py`.
+2. Move the `Unreleased` entries in `CHANGELOG.md` under the new version.
+3. Tag `vX.Y.Z` and publish a GitHub release.
+
+Publishing runs from [`.github/workflows/release.yml`](.github/workflows/release.yml)
+over **PyPI Trusted Publishing** — OIDC, no API token, nothing in repository
+secrets to leak or rotate. The build job refuses to hand anything to the
+publish job until `twine check --strict` passes, the tag agrees with the
+packaged version, and the built wheel has been installed into a clean
+interpreter and run from outside the checkout.
+
+`workflow_dispatch` publishes to TestPyPI by default; choose `pypi` to
+publish for real. Uploads carry [PEP 740](https://peps.python.org/pep-0740/)
+attestations, so anyone can verify a file on PyPI was built by this workflow
+from this repository.
+
 ## House style
 
 - Comments explain *why*. The code already says what.
