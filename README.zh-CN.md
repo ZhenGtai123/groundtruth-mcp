@@ -1,8 +1,9 @@
 # groundtruth-mcp
 
 [![ci](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml)
-[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/pyproject.toml)
-[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/LICENSE)
+[![pypi](https://img.shields.io/pypi/v/groundtruth-mcp)](https://pypi.org/project/groundtruth-mcp/)
+[![python](https://img.shields.io/pypi/pyversions/groundtruth-mcp)](https://pypi.org/project/groundtruth-mcp/)
+[![license](https://img.shields.io/pypi/l/groundtruth-mcp)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/LICENSE)
 
 **AI 编码助手能读完你仓库里的每一个文件，然后照样在猜。**
 这个项目把你自己项目里的校验、试跑、模拟和只读查询封装成 MCP 工具，让它改完

@@ -1,8 +1,9 @@
 # groundtruth-mcp
 
 [![ci](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/ZhenGtai123/groundtruth-mcp/actions/workflows/ci.yml)
-[![python](https://img.shields.io/badge/python-3.11%2B-blue)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/pyproject.toml)
-[![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/LICENSE)
+[![pypi](https://img.shields.io/pypi/v/groundtruth-mcp)](https://pypi.org/project/groundtruth-mcp/)
+[![python](https://img.shields.io/pypi/pyversions/groundtruth-mcp)](https://pypi.org/project/groundtruth-mcp/)
+[![license](https://img.shields.io/pypi/l/groundtruth-mcp)](https://github.com/ZhenGtai123/groundtruth-mcp/blob/main/LICENSE)
 
 **Your coding agent can read every file in your repo and still be guessing.**
 This turns your project's own checks, replays, simulations and queries into MCP
