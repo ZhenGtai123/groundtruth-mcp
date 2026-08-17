@@ -1,0 +1,44 @@
+{
+  "id": "express_checkout",
+  "description": "One-tap checkout for returning customers: no shipping or payment page.",
+  "start": "confirm_sheet",
+  "policy": {
+    "max_retries": 1,
+    "gateway_failure_rate": 0.18,
+    "abandon_chance": 0.02,
+    "latency_jitter_ms": 40
+  },
+  "states": [
+    {
+      "id": "confirm_sheet",
+      "kind": "step",
+      "latency_ms": 120,
+      "abandon_chance": 0.06,
+      "transitions": [
+        { "to": "authorize", "when": "always" },
+        { "to": "abandoned", "when": "abandon" }
+      ]
+    },
+    {
+      "id": "authorize",
+      "kind": "gateway",
+      "latency_ms": 900,
+      "transitions": [
+        { "to": "confirmed", "when": "success" },
+        { "to": "retry_decision", "when": "failure" }
+      ]
+    },
+    {
+      "id": "retry_decision",
+      "kind": "retry",
+      "latency_ms": 20,
+      "transitions": [
+        { "to": "authorize", "when": "retries_left" },
+        { "to": "payment_failed", "when": "retries_exhausted" }
+      ]
+    },
+    { "id": "confirmed", "kind": "terminal", "outcome": "success" },
+    { "id": "payment_failed", "kind": "terminal", "outcome": "payment_failed" },
+    { "id": "abandoned", "kind": "terminal", "outcome": "abandoned" }
+  ]
+}

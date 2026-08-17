@@ -1,0 +1,61 @@
+{
+  "id": "broken_checkout",
+  "description": "Deliberately broken. Every issue here is one an agent editing a config actually introduces.",
+  "start": "cart_review",
+  "policy": {
+    "max_retries": 1,
+    "gateway_failure_rate": 1.4,
+    "abandon_chance": 0.03,
+    "latency_jitter_ms": 60
+  },
+  "states": [
+    {
+      "id": "cart_review",
+      "kind": "step",
+      "latency_ms": 150,
+      "transitions": [
+        { "to": "shipping", "when": "always" },
+        { "to": "abandoned", "when": "abandon" }
+      ]
+    },
+    {
+      "id": "shipping",
+      "kind": "step",
+      "latency_ms": 200,
+      "transitions": [
+        { "to": "payment_methd", "when": "always" },
+        { "to": "abandoned", "when": "abandon" }
+      ]
+    },
+    {
+      "id": "shipping",
+      "kind": "step",
+      "latency_ms": 210,
+      "transitions": [{ "to": "payment_method", "when": "always" }]
+    },
+    {
+      "id": "payment_method",
+      "kind": "stage",
+      "latency_ms": 180,
+      "transitions": [{ "to": "authorize", "when": "always" }]
+    },
+    {
+      "id": "gift_wrap",
+      "kind": "step",
+      "latency_ms": 90,
+      "transitions": [{ "to": "authorize", "when": "always" }]
+    },
+    {
+      "id": "authorize",
+      "kind": "gateway",
+      "latency_ms": 900,
+      "transitions": [
+        { "to": "confirmed", "when": "success" },
+        { "to": "review_hold", "when": "failure" }
+      ]
+    },
+    { "id": "review_hold", "kind": "step", "latency_ms": 400 },
+    { "id": "confirmed", "kind": "terminal", "outcome": "success" },
+    { "id": "abandoned", "kind": "terminal", "outcome": "abandoned" }
+  ]
+}

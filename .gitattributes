@@ -1,0 +1,3 @@
+# Normalize to LF in the repository; check out native on Windows.
+* text=auto eol=lf
+*.db binary

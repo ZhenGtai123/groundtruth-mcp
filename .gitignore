@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local, machine-specific, or generated. Never commit a real connection string.
+.env
+.env.local
+var/
+*.db
+*.sqlite3

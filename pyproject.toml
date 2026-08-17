@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "groundtruth-mcp"
+version = "0.1.0"
+description = "Expose your project's own lint / replay / simulate / query capabilities to coding agents as MCP tools, so the agent gets real feedback instead of guessing."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+keywords = ["mcp", "model-context-protocol", "ai-agents", "developer-tools", "simulation", "ci"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+]
+
+# The core — rule engine, seeded simulation, statistics, thresholds, SQL guard,
+# CLI — has zero third-party dependencies. That is deliberate: the CI gate must
+# not depend on the agent stack. `pip install groundtruth-mcp` gets you a
+# working `groundtruth simulate --gate` on a bare runner; the MCP SDK is only
+# needed by whoever actually serves the tools to an agent.
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.2"]
+postgres = ["psycopg[binary]>=3.1"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+groundtruth = "groundtruth_mcp.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/groundtruth_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "examples/checkout-flow"]

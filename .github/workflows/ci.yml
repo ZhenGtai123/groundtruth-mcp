@@ -1,0 +1,68 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e ".[dev,mcp]"
+      - run: pytest -q
+
+  # The example's own quality gate, and the thing this project is arguing for:
+  # a simulation with declared thresholds, run on every pull request, blocking
+  # the merge when the numbers leave their band. Copy this job into your repo,
+  # point --config at your groundtruth.toml, and you have the same gate.
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+
+      # Structure before numbers: a config that fails lint produces
+      # simulation results that describe a broken config, not a real one.
+      - name: lint every flow
+        run: |
+          groundtruth --config examples/checkout-flow/groundtruth.toml lint standard_checkout
+
+      # Fixed base seed and fixed run count. Not "because randomness is bad" —
+      # because a gate that samples differently on every run fails builds for
+      # reasons unrelated to the diff, and a gate people learn to re-run is not
+      # a gate. --check-determinism additionally proves the engine still
+      # reproduces, which is what makes the fixed seed meaningful.
+      - name: simulate and gate
+        run: |
+          groundtruth --config examples/checkout-flow/groundtruth.toml \
+            simulate standard_checkout --runs 2000 --seed 0 --gate --check-determinism
+
+      - name: record the batch for the job summary
+        if: always()
+        run: |
+          groundtruth --config examples/checkout-flow/groundtruth.toml \
+            simulate standard_checkout --runs 2000 --seed 0 --json > simulation.json
+          {
+            echo '### Simulation'
+            echo '```json'
+            cat simulation.json
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simulation-summary
+          path: simulation.json

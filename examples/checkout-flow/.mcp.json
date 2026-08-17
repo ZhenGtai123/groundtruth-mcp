@@ -1,0 +1,10 @@
+{
+  "$comment": "Drop this at your repo root to give Claude Code (or any MCP client) the tools. Point `command` at the interpreter that has groundtruth-mcp installed.",
+  "mcpServers": {
+    "checkout-flow": {
+      "command": "python",
+      "args": ["-m", "groundtruth_mcp.cli", "--config", "examples/checkout-flow/groundtruth.toml", "serve"],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,67 @@
+# The whole contract between your project, your agent, and your CI.
+#
+# `groundtruth serve` reads this to build the MCP tools. `groundtruth simulate
+# --gate` reads the same file to decide whether a change may merge. There is
+# one copy of the thresholds, so the number the agent optimises against and the
+# number CI enforces cannot disagree.
+
+[project]
+name = "checkout-flow"
+description = "Example project: a config-driven checkout state machine."
+# module:attribute — the module is imported from this file's directory.
+toolkit = "groundtruth_app:kit"
+
+[lint]
+# Declarative structural checks. Hand-written ones are registered in the
+# toolkit module with @kit.validator and run alongside these.
+rules = "rules.toml"
+
+[simulate]
+runs = 200          # what `simulate` uses when the caller does not say
+max_runs = 20000    # ceiling, so one tool call cannot burn a minute of CPU
+max_steps = 200     # per-run step budget; a run that exceeds it is cut short
+seed_policy = "offset"   # run i uses base_seed + i, so any run is replayable by hand
+
+# Thresholds are declared per project, not per invocation. Each one needs at
+# least one bound: a band with no edges never fails, which is indistinguishable
+# from having forgotten to write it.
+[[thresholds]]
+metric = "rate:success"
+min = 0.80
+note = "below this, the flow is losing customers faster than the business case allows"
+
+[[thresholds]]
+metric = "rate:stuck"
+max = 0.0
+note = "a run with nowhere to go is always a config bug, never bad luck"
+
+[[thresholds]]
+metric = "p95:latency_ms"
+max = 4000
+note = "95th-percentile checkout wall time, retries included"
+
+[[thresholds]]
+metric = "mean:payment_attempts"
+max = 1.6
+note = "rising attempts mean the gateway is degrading or the retry policy is too eager"
+
+[data]
+driver = "sqlite"
+url = "var/checkout.db"        # relative to this file, never to the working directory
+url_env = "CHECKOUT_DB_URL"    # an env var, when set, wins over the line above
+allow_tables = ["runs", "events", "customers"]
+# Values in these columns never enter a tool result, even for SELECT *. This
+# one is real enforcement, not advice: the redaction happens after the fetch
+# and before the string the agent sees is built.
+deny_columns = ["email", "card_last4"]
+max_rows = 100
+statement_timeout_ms = 5000
+
+[output]
+# Hard cap on characters per tool result. An agent's context is a budget.
+max_chars = 8000
+
+[settings]
+# Anything here reaches your functions as `ctx.settings`. Keep secrets out —
+# this file is committed.
+currency = "USD"

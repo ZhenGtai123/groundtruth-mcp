@@ -1,0 +1,112 @@
+# Structural rules for a checkout flow.
+#
+# These are the checks that do not need to know what a checkout *is* — they
+# know that this config is a graph with ids, edges, a start node and terminals,
+# which is true of most config formats worth linting. Nothing here is written
+# in Python; adding a check is adding a table to this file.
+#
+# The checks that do need domain knowledge (does this retry budget meet the
+# product's failure target?) live in groundtruth_app.py as a @kit.validator.
+# Rules first, code for the rest: the split keeps the common cases editable by
+# anyone and the interesting cases honest.
+
+[[rule]]
+type = "required_fields"
+select = "states[]"
+fields = ["id", "kind"]
+code = "STATE_INCOMPLETE"
+hint = "every state needs an id and a kind"
+
+[[rule]]
+type = "unique_key"
+select = "states[]"
+key = "id"
+code = "DUPLICATE_STATE"
+hint = "rename one of them; the engine silently uses the first and ignores the rest"
+
+[[rule]]
+type = "enum"
+select = "states[].kind"
+values = ["step", "gateway", "retry", "terminal"]
+code = "UNKNOWN_STATE_KIND"
+hint = "the engine only knows these four kinds; anything else is treated as a plain step"
+
+[[rule]]
+type = "enum"
+select = "states[].transitions[].when"
+values = ["always", "abandon", "success", "failure", "retries_left", "retries_exhausted"]
+code = "UNKNOWN_SIGNAL"
+hint = "a transition waiting on a signal no state emits is dead config"
+
+[[rule]]
+type = "ref_exists"
+select = "states[].transitions[].to"
+collection = "states[]"
+key = "id"
+code = "DANGLING_TRANSITION"
+hint = "point it at an existing state id, or delete the transition"
+
+[[rule]]
+type = "ref_exists"
+select = "start"
+collection = "states[]"
+key = "id"
+code = "BAD_START"
+hint = "start must name a declared state"
+
+[[rule]]
+type = "reachable"
+collection = "states[]"
+key = "id"
+edges = "transitions[].to"
+start = "start"
+code = "UNREACHABLE_STATE"
+severity = "warning"
+hint = "no path from start reaches this state — delete it, or wire it in"
+
+[[rule]]
+type = "no_dead_end"
+collection = "states[]"
+key = "id"
+edges = "transitions[].to"
+terminal_field = "kind"
+terminal_values = ["terminal"]
+code = "DEAD_END"
+hint = "give it a transition, or mark it kind = \"terminal\" with an outcome"
+
+# The retry loop is a cycle on purpose, so it is declared here rather than
+# suppressed globally. Any *other* ring in the graph still gets reported —
+# which is the point: a rule that has been switched off tells you nothing, a
+# rule with one named exception tells you what someone decided and why.
+[[rule]]
+type = "no_cycle"
+collection = "states[]"
+key = "id"
+edges = "transitions[].to"
+allow = [["authorize", "retry_decision"]]
+code = "UNEXPECTED_CYCLE"
+severity = "warning"
+hint = "a loop with no exit condition hangs the run; if it is intentional, add it to `allow`"
+
+[[rule]]
+type = "range"
+select = "policy.gateway_failure_rate"
+min = 0.0
+max = 1.0
+code = "RATE_OUT_OF_RANGE"
+hint = "this is a probability, not a percentage — 0.18, not 18"
+
+[[rule]]
+type = "range"
+select = "states[].abandon_chance"
+min = 0.0
+max = 1.0
+code = "RATE_OUT_OF_RANGE"
+
+[[rule]]
+type = "range"
+select = "policy.max_retries"
+min = 0
+max = 5
+code = "RETRY_LIMIT_UNREASONABLE"
+hint = "more than five retries against a failing gateway is a queue, not a checkout"

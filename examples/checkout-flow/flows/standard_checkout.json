@@ -1,0 +1,64 @@
+{
+  "id": "standard_checkout",
+  "description": "Four-page checkout with a retried payment authorization.",
+  "start": "cart_review",
+  "policy": {
+    "max_retries": 2,
+    "gateway_failure_rate": 0.18,
+    "abandon_chance": 0.03,
+    "latency_jitter_ms": 60
+  },
+  "states": [
+    {
+      "id": "cart_review",
+      "kind": "step",
+      "latency_ms": 150,
+      "abandon_chance": 0.04,
+      "transitions": [
+        { "to": "shipping", "when": "always" },
+        { "to": "abandoned", "when": "abandon" }
+      ]
+    },
+    {
+      "id": "shipping",
+      "kind": "step",
+      "latency_ms": 200,
+      "abandon_chance": 0.05,
+      "transitions": [
+        { "to": "payment_method", "when": "always" },
+        { "to": "abandoned", "when": "abandon" }
+      ]
+    },
+    {
+      "id": "payment_method",
+      "kind": "step",
+      "latency_ms": 180,
+      "abandon_chance": 0.03,
+      "transitions": [
+        { "to": "authorize", "when": "always" },
+        { "to": "abandoned", "when": "abandon" }
+      ]
+    },
+    {
+      "id": "authorize",
+      "kind": "gateway",
+      "latency_ms": 900,
+      "transitions": [
+        { "to": "confirmed", "when": "success" },
+        { "to": "retry_decision", "when": "failure" }
+      ]
+    },
+    {
+      "id": "retry_decision",
+      "kind": "retry",
+      "latency_ms": 20,
+      "transitions": [
+        { "to": "authorize", "when": "retries_left" },
+        { "to": "payment_failed", "when": "retries_exhausted" }
+      ]
+    },
+    { "id": "confirmed", "kind": "terminal", "outcome": "success" },
+    { "id": "payment_failed", "kind": "terminal", "outcome": "payment_failed" },
+    { "id": "abandoned", "kind": "terminal", "outcome": "abandoned" }
+  ]
+}
